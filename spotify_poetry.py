@@ -63,12 +63,13 @@ def find_track(title_buffer):
 # else returns empty string
 #
 def query_spotify(song_title):
-    s = u'track:"'+song_title+'"'
-    url = 'https://api.spotify.com/v1/search?type=track&limit=1&q=' + urllib.quote(s.encode("utf-8"))  # this is wrong request, matches too much
+    s = u'track:"'+song_title.replace(' ', '+')+'"'
+    url = 'https://api.spotify.com/v1/search?type=track&limit=1&q=' + urllib.quote(s.encode("utf-8"))
     response = urllib2.urlopen(url).read()
     data = json.loads(response)
-    spotify_title = data["tracks"]["items"][0]["name"]
-    spotify_url = data["tracks"]["items"][0]["external_urls"]["spotify"]
+    items = data["tracks"]["items"]
+    spotify_title = items[0]["name"] if len(items) > 0 else ""
+    spotify_url = items[0]["external_urls"]["spotify"] if len(items) > 0 else ""
     return spotify_url if spotify_title.lower() == song_title.lower() else ""
 
 
@@ -78,10 +79,7 @@ def shift_buffer(title_buffer, title_length):
         title_buffer[copy_idx - title_length] = title_buffer[copy_idx]
         copy_idx += 1
 
-    if len(title_buffer) == 1:
-        del title_buffer[:]
-    else:
-        del title_buffer[title_length:]
+    del title_buffer[-title_length:]
 
 
 if __name__ == '__main__':
